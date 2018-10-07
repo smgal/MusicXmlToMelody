@@ -1,0 +1,24 @@
+{
+  "name": "musicxml2melody",
+  "version": "0.1.0",
+  "description": "Convert a MusicXML file to the main melody and chords information",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smgal/MusicXmlToMelody.git"
+  },
+  "keywords": [
+    "MusicXml",
+    "midi",
+    "melody"
+  ],
+  "author": "smgal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smgal/MusicXmlToMelody/issues"
+  },
+  "homepage": "https://github.com/smgal/MusicXmlToMelody#readme"
+}
