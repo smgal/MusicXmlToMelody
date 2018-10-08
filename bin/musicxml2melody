@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+
+var fs        = require('fs')
+var program   = require('commander')
+var package   = require('../package.json')
+var MusicXml  = require('../index.js')
+
+program
+	.version(package.version)
+	.usage('[options] <file>\n  If <file> not specified, \'stdin\' used as input file')
+	.option('-s, --spec [spec=1]', 'specifiy text format version')
+	.parse(process.argv);
+
+var xml_file_name = program.args[0];
+var spec_version = parseInt(program.spec) || 0;
+
+function haltProgram(message, error)
+{
+	console.error(message);
+	console.error(error.message);
+	process.exit(1);
+}
+
+function readFromFile(file, user_callback)
+{
+	var mem_buffer = '';
+	var stream = file ? fs.createReadStream(file) : process.stdin;
+
+	stream.resume();
+	stream.setEncoding('utf8');
+
+	stream.on('data', function(chunk) { mem_buffer += chunk; });
+	stream.on('error', function(error) { user_callback(error); });
+	stream.on('end', function() { user_callback(null, mem_buffer); });
+}
+
+if (xml_file_name == null)
+{
+	program.help();
+}
+else
+{
+	readFromFile(xml_file_name,
+		function(error, data)
+		{
+			error && haltProgram('Unable to read from the file: ', error);
+
+			MusicXml.Run(
+				{
+					stream: data,
+					spec_version: spec_version
+				},
+				function(error, output)
+				{
+					error && haltProgram('Error occurs: ', error);
+					console.log(output);
+				}
+			);
+		}
+	);
+}
