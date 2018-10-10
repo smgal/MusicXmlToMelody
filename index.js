@@ -84,6 +84,8 @@ function MusicXmlParser(settings)
 	this.in_harmony     = false;
 	this.in_degree      = false;
 	this.in_note        = false;
+	// member variables
+	this.num_beats       = 4;
 
 	// member variables
 	this.time_sig       = { beats: 0, beat_type: 0 };
@@ -170,6 +172,7 @@ MusicXmlParser.prototype.OnClose = function(node)
 		{
 			if (this.time_sig.beats > 0 && this.time_sig.beat_type > 0)
 			{
+				this.num_beats = this.time_sig.beats;
 				this.measure_obj.time_sig.beats = this.time_sig.beats;
 				this.measure_obj.time_sig.beat_type = this.time_sig.beat_type;
 			}
@@ -179,7 +182,7 @@ MusicXmlParser.prototype.OnClose = function(node)
 		}
 		else if (tag_name == "measure")
 		{
-			if (this.sum_duration != 1920)
+			if (this.sum_duration != DURATION_STEP_IN_MEASURE *this.num_beats)
 				console.error("**** <" + this.ix_current_measure + "> DURATION ERROR: duration = " + this.sum_duration);
 
 			this.measure_obj.index = this.ix_current_measure;
