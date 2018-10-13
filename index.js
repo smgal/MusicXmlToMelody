@@ -477,7 +477,12 @@ function ScoreDescriptor1_CB(error, measures, sax_output, user_callback)
 			var chord = measure.chords[ix];
 			var chord_str = _getChordStr(chord.root_step, chord.root_alter, chord.root_kind, chord.bass_step, chord.bass_alter, chord.degrees);
 
-			sequences.push("  " + _getTimeStampStr(chord.time_stamp) + " CHORD: " + chord_str);
+			sequences.push(
+				{
+					time_stamp: chord.time_stamp,
+					text: "  " + _getTimeStampStr(chord.time_stamp) + " CHORD: " + chord_str
+				}
+			);
 		}
 
 		for (var ix in measure.notes)
@@ -489,7 +494,12 @@ function ScoreDescriptor1_CB(error, measures, sax_output, user_callback)
 
 			if (note.is_rest)
 			{
-				sequences.push(time_stamp_prefix + "__REST(d:" + _getDurationStr(note.duration) + ")");
+				sequences.push(
+					{
+						time_stamp: note.time_stamp,
+						text: time_stamp_prefix + "  REST(d:" + _getDurationStr(note.duration) + ")"
+					}
+				);
 			}
 			else
 			{
@@ -506,16 +516,29 @@ function ScoreDescriptor1_CB(error, measures, sax_output, user_callback)
 					++alter;
 				}
 
-				sequences.push(time_stamp_prefix + "__NOTE(d:" + _getDurationStr(note.duration) + ") " + note.pitch_step + alter_str + note.pitch_octave);
+				sequences.push(
+					{
+						time_stamp: note.time_stamp,
+						text: time_stamp_prefix + "  NOTE(d:" + _getDurationStr(note.duration) + ") " + note.pitch_step + alter_str + note.pitch_octave
+					}
+				);
 			}
 		}
 		
-		sequences.sort();
+		sequences.sort(function(a, b)
+		{
+			if (a.time_stamp < b.time_stamp)
+				return -1;
+			else if (a.time_stamp > b.time_stamp)
+				return 1;
+			else
+				return a.text - b.text;
+		});
 
 		for (var ix in sequences)
 		{
 			sequence = sequences[ix];
-			result += sequence + "\n";
+			result += sequence.text + "\n";
 		}
 	}
 
