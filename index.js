@@ -93,6 +93,7 @@ function MusicXmlParser(settings)
 	this.degree_obj     = new Degree();
 	this.degrees        = [];
 	this.bass           = { step: "", alter: 0 };
+	this.offset         = 0;
 	this.note           = { voice: 1, step: "", alter: 0, octave: 0, duration: 0, is_rest: false };
 	this.sum_duration   = 0;
 
@@ -182,7 +183,7 @@ MusicXmlParser.prototype.OnClose = function(node)
 		}
 		else if (tag_name == "measure")
 		{
-			if (this.sum_duration != DURATION_STEP_IN_MEASURE *this.num_beats)
+			if (this.sum_duration != DURATION_STEP_IN_MEASURE * this.num_beats)
 				console.error("**** <" + this.ix_current_measure + "> DURATION ERROR: duration = " + this.sum_duration);
 
 			this.measure_obj.index = this.ix_current_measure;
@@ -205,7 +206,7 @@ MusicXmlParser.prototype.OnClose = function(node)
 			if (this.chord.root.length > 0)
 			{
 				var chord = new Chord();
-				chord.time_stamp = this.sum_duration;
+				chord.time_stamp = this.sum_duration + this.tickToDuration(this.offset);
 				chord.root_step = this.chord.root;
 				chord.root_alter = this.chord.alter;
 				chord.root_kind = this.chord.kind;
@@ -222,6 +223,7 @@ MusicXmlParser.prototype.OnClose = function(node)
 			this.degrees = [];
 			this.bass.step = "";
 			this.bass.alter = 0;
+			this.offset = 0;
 			this.in_harmony = false;
 		}
 		else if (tag_name == "note")
@@ -335,6 +337,8 @@ MusicXmlParser.prototype.OnData = function(context)
 					this.bass.step = context;
 				if (lastest_tag == "bass-alter")
 					this.bass.alter = parseInt(context, 10);
+				if (lastest_tag == "offset")
+					this.offset = parseInt(context, 10);
 			}
 
 			if (this.in_note)
@@ -342,7 +346,7 @@ MusicXmlParser.prototype.OnData = function(context)
 				if (lastest_tag == "rest")
 					this.note.is_rest = true;
 				if (lastest_tag == "duration")
-					this.note.duration = DURATION_STEP_IN_MEASURE * parseInt(context, 10) / this.DIVISION_IN_BEAT;
+					this.note.duration = this.tickToDuration(parseInt(context, 10));
 				if (lastest_tag == "voice")
 					this.note.voice = parseInt(context, 10);
 				if (lastest_tag == "step")
@@ -374,6 +378,11 @@ MusicXmlParser.prototype.parse = function(string, internal_callback, user_callba
 
 	this.sax.write(string);
 };
+
+MusicXmlParser.prototype.tickToDuration = function(tick)
+{
+	return tick * DURATION_STEP_IN_MEASURE / this.DIVISION_IN_BEAT;
+}
 
 function _zeroPad(num, size)
 {
